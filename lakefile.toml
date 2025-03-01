@@ -1,0 +1,21 @@
+name = "CP"
+version = "0.1.0"
+keywords = ["math"]
+defaultTargets = ["CP"]
+
+[leanOptions]
+pp.unicode.fun = true
+autoImplicit = false
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "16a1c5cebbf76fcbea57a380669e60224207be98"
+
+[[require]]
+name = "local_class_field_theory"
+git = "https://github.com/mariainesdff/LocalClassFieldTheory.git"
+rev = "master"
+
+[[lean_lib]]
+name = "CP"
