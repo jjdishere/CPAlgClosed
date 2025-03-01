@@ -85,15 +85,18 @@ instance PadicComplex.isAlgClosed : IsAlgClosed ℂ_[p] := by
   have fa : f = minpoly ℂ_[p] a := minpoly.eq_of_irreducible_of_monic firr fa0 fmon
   have masp : (minpoly ℂ_[p] a).Splits (algebraMap ℂ_[p] F) := by
     simpa [fa] using (Polynomial.SplittingField.splits f)
-  have aint : IsIntegral ℂ_[p] a := sorry
+  have aint : IsIntegral ℂ_[p] a := ⟨f, fmon, fa0⟩
   classical
-  let S : Finset F := {x ∈ (f.rootSet F).toFinset | x ≠ a}
+    let S : Finset F := {x ∈ (f.rootSet F).toFinset | x ≠ a}
   have Snonempty : S.Nonempty := sorry
   let δ : ℝ := Finset.min' (S.image fun x => ‖a - x‖) (Finset.image_nonempty.mpr Snonempty)
   have norm_sub_le : ∀ a' : F, IsConjRoot ℂ_[p] a a' → a ≠ a' → δ ≤ ‖a - a'‖ := by
-    intro a' ha'
-    sorry
-  -- Finset.min'_le
+    intro a' conj ne
+    apply Finset.min'_le (S.image fun x => ‖a - x‖) (‖a - a'‖)
+    apply Finset.mem_image_of_mem
+    simp only [S, fa, Finset.mem_filter, Set.mem_toFinset]
+    rw [← (isConjRoot_iff_mem_minpoly_rootSet aint)]
+    exact ⟨conj, ne.symm⟩
   let ε := (δ / (max ‖a‖ 1)) ^ f.natDegree
   have hε : ε > 0 := sorry
   let ⟨g, gmon, gdeg, gcoeff⟩ := Polynomial.approximation_completion fmon hε
@@ -104,8 +107,11 @@ instance PadicComplex.isAlgClosed : IsAlgClosed ℂ_[p] := by
   have gCpSplitsId : gCp.Splits (RingHom.id _) := sorry
   have gCpSplits : gCp.Splits (algebraMap ℂ_[p] F) := sorry
   let ⟨b, hb, hab⟩ := exists_aroots_norm_sub_lt a hε fa0 fmon gCpmon gCpdeg gCpcoeff gCpSplits
-  have bbot : b ∈ (⊥ : IntermediateField ℂ_[p] F) := sorry
-  have bint : IsIntegral ℂ_[p] b := sorry
+  have bbot : b ∈ (⊥ : IntermediateField ℂ_[p] F) := sorry -- Polynomial.roots_map
+  simp only [Polynomial.mem_roots', ne_eq, Polynomial.map_eq_zero, Polynomial.IsRoot.def,
+    Polynomial.eval_map_algebraMap] at hb
+  have bint : IsIntegral ℂ_[p] b :=
+  ⟨gCp, gCpmon, hb.2⟩
   have : a ∈ (⊥ : IntermediateField ℂ_[p] F) := by
     have := IsKrasnerNorm.krasner_norm ℂ_[p] F (minpoly.irreducible aint).separable
         (x := a) (y := b) masp bint sorry
