@@ -1,4 +1,4 @@
-# CP
+# CPAlgClosed
 
 In this repo, we formalize in Lean 4 the result that the p-adic complex number field \(\mathbb{C}_p\) is algebraically closed.
 
