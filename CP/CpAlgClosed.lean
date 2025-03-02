@@ -3,14 +3,10 @@ import LocalClassFieldTheory.FromMathlib.CpDef
 
 #check spectral_norm_unique'
 variable {K L} [NontriviallyNormedField K] [CompleteSpace K] [NormedField L] [NormedAlgebra K L] [IsUltrametricDist K] [Algebra.IsAlgebraic K L]
--- #synth IsKrasnerNorm K L
-instance foo {K L} [NontriviallyNormedField K] [CompleteSpace K] [NormedField L] [NormedAlgebra K L] [IsUltrametricDist K] [Algebra.IsAlgebraic K L] : IsKrasnerNorm K L := sorry -- input from last file
+#synth IsKrasnerNorm K L
+-- instance foo {K L} [NontriviallyNormedField K] [CompleteSpace K] [NormedField L] [NormedAlgebra K L] [IsUltrametricDist K] [Algebra.IsAlgebraic K L] : IsKrasnerNorm K L := sorry -- input from last file
 
 open Polynomial
-
-#check PadicComplex
-#check Multiset.prod_map_le_prod_map₀
-#check Polynomial.splits_iff_card_roots
 
 theorem exists_aroots_norm_sub_lt {K L} [NormedField K] [NormedField L] [NormedAlgebra K L] {f g : Polynomial K} (a : L) {ε : ℝ} (hε : 0 < ε)
     (ha : f.aeval a = 0) (hfm : f.Monic) (hgm : g.Monic) (hdeg : g.natDegree = f.natDegree)

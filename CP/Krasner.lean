@@ -45,77 +45,50 @@ compatible with the one on `K`, then `IsKrasnerNorm K L` holds.
 
 -/
 
+section AlgebraNorm
 
-def uniqueMulAlgebraNorm (K L : Type*) [NormedField K] [Ring L] [Algebra K L]
-    [Algebra.IsAlgebraic K L] : Prop :=
-  Subsingleton (MulAlgebraNorm K L) ∧ Nonempty (MulAlgebraNorm K L)
+namespace MulAlgebraNorm
 
-instance fooBar (K L) [NontriviallyNormedField K] [IsUltrametricDist K] [CompleteSpace K] [Field L]
-    [Algebra K L] [Algebra.IsAlgebraic K L] : Unique (MulAlgebraNorm K L) := ⟨sorry, sorry⟩
--- def uniqueNormExtension (K L : Type*) [NormedCommRing K] [Field L] [Algebra K L]
---     [Algebra.IsAlgebraic K L] :=
---   ∃! (_ : NormedField L), ∀ (x : K), ‖x‖ = ‖algebraMap K L x‖
+variable {R S : Type*} [SeminormedCommRing R] [Ring S] [Algebra R S]
 
--- def uniqueNormExtension' (K L : Type*) [NormedCommRing K] [Field L] [Algebra K L]
---     [Algebra.IsAlgebraic K L] :=
---   Singleton (MulAlgebraNorm K L)
+def toAlgebraNorm (f : MulAlgebraNorm R S) : AlgebraNorm R S := {
+  f with
+  mul_le' _ _ := (f.map_mul' _ _).le
+}
 
--- variable (K L) [NormedField K] [Nm_L : NormedField L]
---     [Algebra K L]
--- #check RingHomClass.toNonUnitalRingHomClass
--- #synth RingEquivClass (L ≃ₐ[K] L) L L
--- #synth NonUnitalRingHomClass (L ≃ₐ[K] L) L L
-theorem IsConjRoot.norm_eq_of_uniqueMulAlgebraNorm (K L) [NormedField K] [Nm_L : NormedField L]
-    [NormedAlgebra K L]
-    [Algebra.IsAlgebraic K L] (x y: L) (uniq : uniqueMulAlgebraNorm K L)
-    (sp : (minpoly K x).Splits (algebraMap K L))
-    (h : IsConjRoot K x y) : ‖x‖ = ‖y‖ := by
-  obtain ⟨σ, hσ⟩ := IsConjRoot.exists_algEquiv_of_minpoly_split h sp
-  symm
-  calc
-    ‖y‖ = (NormedField.induced L L σ σ.injective).norm y := by
-      apply congrArg (a₁ := Nm_L) (a₂ := (NormedField.induced L L σ σ.injective))
-      sorry
-      -- exact uniq.unique extd fun _ => congrArg Nm_L.norm (σ.commutes _).symm ▸ extd _
-    _ = ‖x‖ := hσ ▸ rfl
+instance : Coe (MulAlgebraNorm R S) (AlgebraNorm R S) := ⟨toAlgebraNorm⟩
 
--- #check Algebra.smul_def
--- #synth UniformContinuousConstSMul K L
--- instance uniformContinuousConstSMul:
---   UniformContinuousConstSMul K L:= uniformContinuousConstSMul_of_continuousConstSMul K L
+@[simp]
+lemma coe_AlgebraNorm (f : MulAlgebraNorm R S) : ⇑(f : AlgebraNorm R S) = ⇑f := rfl
 
--- #synth UniformContinuousConstSMul K L
+end MulAlgebraNorm
 
--- theorem boundedSMul_of_extd (extd : ∀ x : K, ‖x‖  = ‖algebraMap K L x‖) : BoundedSMul K L :=
---   BoundedSMul.of_norm_smul_le
---     (fun r x => Algebra.smul_def r x ▸ extd r ▸ NonUnitalSeminormedRing.norm_mul _ x)
+namespace NormedAlgebra
 
--- def NormedField.mulAlgebraNorm (K L : Type*) [NormedField K] [NormedField L] [Algebra K L]
---     (extd : ∀ x : K, ‖x‖  = ‖algebraMap K L x‖) : MulAlgebraNorm K L where
---       toFun := (‖·‖)
---       map_zero' := norm_zero
---       add_le' := norm_add_le
---       neg' := norm_neg
---       map_one' := norm_one
---       map_mul' := norm_mul
---       eq_zero_of_map_eq_zero' _ := norm_eq_zero.mp
---       smul' := norm_smul
+def toMulAlgebraNorm (K L : Type*) [NormedField K] [NormedField L]
+    [NormedAlgebra K L] : MulAlgebraNorm K L := {
+      NormedField.toMulRingNorm L with
+      smul' r x := by
+        simp only [Algebra.smul_def', AddGroupSeminorm.toFun_eq_coe, MulRingSeminorm.toFun_eq_coe,
+          map_mul, mul_eq_mul_right_iff, map_eq_zero]
+        exact Or.inl <| norm_algebraMap' L r
+    }
 
--- theorem IsConjRoot.norm_eq_of_uniqueNormExtension (K L) [NormedField K]
---     [Nm_L : MulAlgebraNorm K L]
---     [Algebra K L]
---     [Algebra.IsAlgebraic K L] (x y: L) (uniq : uniqueNormExtension' K L)
---     (extd : ∀ x : K, ‖x‖  = ‖algebraMap K L x‖) (sp : (minpoly K x).Splits (algebraMap K L))
---     (h : IsConjRoot K x y) : ‖x‖ = ‖y‖ := by
---   obtain ⟨σ, hσ⟩ := IsConjRoot.exists_algEquiv_of_minpoly_split h sp
---   symm
---   calc
---     ‖y‖ = (NormedField.induced L L σ σ.injective).norm y := by
---       apply congrArg (a₁ := Nm_L) (a₂ := (NormedField.induced L L σ σ.injective))
---       exact uniq.unique extd fun _ => congrArg Nm_L.norm (σ.commutes _).symm ▸ extd _
---     _ = ‖x‖ := hσ ▸ rfl
+@[simp]
+lemma toMulAlgebraNorm_apply (K : Type*) {L : Type*} [NormedField K] [NormedField L]
+    [NormedAlgebra K L] (x : L) : toMulAlgebraNorm K L x = ‖x‖ := rfl
 
+lemma norm_eq_spectralNorm (K : Type*) {L : Type*} [NontriviallyNormedField K]
+    [IsUltrametricDist K] [NormedField L] [NormedAlgebra K L] [Algebra.IsAlgebraic K L]
+    [CompleteSpace K] (x : L) : ‖x‖ = spectralNorm K L x := by
+  rw [← toMulAlgebraNorm_apply K x, ← spectralAlgNorm_def IsUltrametricDist.isNonarchimedean_norm, ← MulAlgebraNorm.coe_AlgebraNorm]
+  congr
+  apply spectral_norm_unique'
+  exact MulRingNorm.isPowMul (toMulAlgebraNorm K L).toMulRingNorm
 
+end NormedAlgebra
+
+end AlgebraNorm
 
 open IntermediateField Valued
 
@@ -135,90 +108,136 @@ theorem IsKrasnerNorm.krasner_norm [IsKrasnerNorm K L] {x y : L} (hx : (minpoly 
     (h : (∀ x' : L, IsConjRoot K x x' → x ≠ x' → ‖x - y‖ < ‖x - x'‖)) : x ∈ K⟮y⟯ :=
   IsKrasnerNorm.krasner_norm' hx sp hy h
 
--- (is_na : IsNonarchimedean (‖·‖ : K → ℝ))
-#check AlgebraNorm
--- MulNormedAlgebra = NormedAlgebra + ‖r • x ‖ = ‖r ‖ * ‖ x ‖
-
-theorem of_completeSpace {K L : Type*} [Nm_K : NontriviallyNormedField K] [CompleteSpace K] [IsUltrametricDist K] [Nm_L : NormedField L] [NormedAlgebra K L] [Algebra.IsAlgebraic K L] (uniq : ∀ M : IntermediateField K L, uniqueMulAlgebraNorm M L) : IsKrasnerNorm K L := by
+instance IsKrasnerNorm.of_completeSpace {K L : Type*} [NontriviallyNormedField K] [CompleteSpace K] [IsUltrametricDist K] [NormedField L] [NormedAlgebra K L] [Algebra.IsAlgebraic K L] : IsKrasnerNorm K L := by
   constructor
   intro x y xsep sp yint kr
   let z := x - y
-  let M := K⟮y⟯
-  have _ := IntermediateField.adjoin.finiteDimensional yint
-  let i_K : NormedAddGroupHom K (⊥ : IntermediateField K L) :=
-    (AddMonoidHomClass.toAddMonoidHom (botEquiv K L).symm).mkNormedAddGroupHom 1 (by sorry) -- simp [extd])
-  have _ : ContinuousSMul K M := by
-    apply Topology.IsInducing.continuousSMul (N := K) (M := (⊥ : IntermediateField K L)) (X := M) (Y := M)
-      (f := (IntermediateField.botEquiv K L).symm) Topology.IsInducing.id i_K.continuous
-    intros c x
-    simp
-    -- exact (algebraMap_smul _ _ _).symm -- add an instance here
-    rw [Algebra.smul_def, @Algebra.smul_def (⊥ : IntermediateField K L) M _ _ _]
-    rfl -- note to reviewers: This is an ugly `rfl`. I'm not sure how to make it better.
-  let _ : CompleteSpace M := FiniteDimensional.complete K M
-  have hy : y ∈ K⟮y⟯ := IntermediateField.subset_adjoin K {y} rfl
-  have zsep : IsSeparable M z := by
-    apply Field.isSeparable_sub (IsSeparable.tower_top M xsep)
-    simpa using isSeparable_algebraMap (⟨y, hy⟩ : M)
-  suffices z ∈ K⟮y⟯ by simpa [z] using add_mem this hy
-  by_contra hz
-  have : z ∈ K⟮y⟯ ↔ z ∈ (⊥ : Subalgebra M L) := by sorry -- simp [Algebra.mem_bot]
-  rw [this.not] at hz
-  obtain ⟨z', hne, h1⟩ := (not_mem_iff_exists_ne_and_isConjRoot zsep
-      (minpoly_sub_algebraMap_splits (⟨y, hy⟩ : K⟮y⟯) (IsIntegral.minpoly_splits_tower_top
-        xsep.isIntegral sp))).mp hz
-  simp only [ne_eq, Subtype.mk.injEq] at hne
-
-  -- have eq_spnM : (norm : M → ℝ) = spectralNorm K M :=
-  --   funext <| spectralNorm_unique_field_norm_ext
-  --     (f := instNormedIntermediateField.toMulRingNorm) extd is_na
-  -- have eq_spnL : (norm : L → ℝ) = spectralNorm K L :=
-  --   funext <| spectralNorm_unique_field_norm_ext (f := NL.toMulRingNorm) extd is_na
-  -- have is_naM : IsNonarchimedean (norm : M → ℝ) := eq_spnM ▸ spectralNorm_isNonarchimedean K M is_na
-  -- have is_naL : IsNonarchimedean (norm : L → ℝ) := eq_spnL ▸ spectralNorm_isNonarchimedean K L is_na
-
-  letI : NontriviallyNormedField M := {
-    SubfieldClass.toNormedField M with
+  haveI := IntermediateField.adjoin.finiteDimensional yint
+  letI : NontriviallyNormedField K⟮y⟯ := {
     non_trivial := by
       obtain ⟨k, hk⟩ :=  @NontriviallyNormedField.non_trivial K _
-      use algebraMap K M k
-      change 1 < ‖(algebraMap K L) k‖
-      sorry -- simp [(extd k).symm, hk]-- a lemma for extends nontrivial implies nontrivial
+      use algebraMap K K⟮y⟯ k
+      simp [hk]
     }
-  -- have eq_spnML: (norm : L → ℝ) = spectralNorm M L := by
-  --   apply Eq.trans eq_spnL
-  --   apply (_root_.funext <| spectralNorm_unique_field_norm_ext (K := K)
-  --     (f := (spectralMulAlgNorm is_naM).toMulRingNorm) _ is_na).symm
-  --   apply functionExtends_of_functionExtends_of_functionExtends (fA := (norm : M → ℝ))
-  --   · intro m
-  --     exact extd m
-  --   · exact spectralNorm_extends M L -- a lemma for extends extends
-  -- have norm_eq: ‖z‖ = ‖z'‖ := by -- a lemma
-  --   simp only [eq_spnML, spectralNorm]
-  --   congr 1
-    -- spectralNorm K L = spectralnorm M L
-  -- IsConjRoot.val_eq M hM (Polynomial.Separable.isIntegral zsep) h1
-  -- need rank one -- exist_algEquiv
-  have extdM : ∀ x : M, ‖x‖ = ‖algebraMap M L x‖ := by
-    sorry
-  have uniqM : uniqueMulAlgebraNorm M L := by
-    sorry
+  letI : CompleteSpace K⟮y⟯ := FiniteDimensional.complete K K⟮y⟯
+  haveI : IsUltrametricDist L := IsUltrametricDist.of_normedAlgebra K
+  let y' : K⟮y⟯ := ⟨y, IntermediateField.subset_adjoin K {y} rfl⟩
+  have zsep : IsSeparable K⟮y⟯ z := by
+    apply Field.isSeparable_sub (IsSeparable.tower_top K⟮y⟯ xsep)
+    simpa using isSeparable_algebraMap y'
+  suffices z ∈ K⟮y⟯ by simpa [z, y'] using add_mem this y'.2
+  by_contra hz
+  have : z ∈ K⟮y⟯ ↔ z ∈ (⊥ : Subalgebra K⟮y⟯ L) := by
+    rw [Algebra.mem_bot]
+    simp
+  rw [this.not] at hz
+  obtain ⟨z', hne, h1⟩ := (not_mem_iff_exists_ne_and_isConjRoot zsep
+      (minpoly_sub_algebraMap_splits y' (IsIntegral.minpoly_splits_tower_top
+        xsep.isIntegral sp))).mp hz
+  simp only [ne_eq, Subtype.mk.injEq] at hne
+  obtain ⟨σ, hσ⟩ := IsConjRoot.exists_algEquiv_of_minpoly_split h1
+      (minpoly_sub_algebraMap_splits y'
+      (IsIntegral.minpoly_splits_tower_top xsep.isIntegral sp))
+  apply_fun σ.symm at hσ
+  simp only [AlgEquiv.symm_apply_apply] at hσ
   have : ‖z - z'‖ < ‖z - z'‖ := by
     calc
       _ ≤ max ‖z‖ ‖z'‖ := by
-        sorry -- simpa only [norm_neg, sub_eq_add_neg] using (is_na.norm_extension extd z (- z'))
+        simpa only [norm_neg, sub_eq_add_neg] using (IsUltrametricDist.norm_add_le_max z (- z'))
       _ ≤ ‖x - y‖ := by
-        sorry -- rw [h1.norm_eq_of_uniqueNormExtension M L z z' uniqM extdM
-             -- (minpoly_sub_algebraMap_splits ⟨y, hy⟩ (xsep.isIntegral.minpoly_splits_tower_top sp))]
-        -- simp only [max_self, le_refl]
+        simp only [NormedAlgebra.norm_eq_spectralNorm K, hσ, sup_le_iff]
+        rw [← AlgEquiv.restrictScalars_apply K, ← spectralNorm_aut_isom (σ.symm.restrictScalars K)]
+        simp [z]
       _ < ‖x - (z' + y)‖ := by
         apply kr (z' + y)
-        · apply IsConjRoot.of_isScalarTower (L := M) xsep.isIntegral
-          simpa only [IntermediateField.algebraMap_apply, sub_add_cancel, z] using
-            IsConjRoot.add_algebraMap ⟨y, hy⟩ h1
+        · apply IsConjRoot.of_isScalarTower (L := K⟮y⟯) xsep.isIntegral
+          simpa [z, y'] using IsConjRoot.add_algebraMap y' h1
         · simpa [z, sub_eq_iff_eq_add] using hne
       _ = ‖z - z'‖ := by congr 1; ring
   simp only [lt_self_iff_false] at this
+
+
+-- theorem of_completeSpace {K L : Type*} [Nm_K : NontriviallyNormedField K] [CompleteSpace K] [IsUltrametricDist K] [Nm_L : NormedField L] [NormedAlgebra K L] [Algebra.IsAlgebraic K L] (uniq : ∀ M : IntermediateField K L, uniqueMulAlgebraNorm M L) : IsKrasnerNorm K L := by
+--   constructor
+--   intro x y xsep sp yint kr
+--   let z := x - y
+--   let M := K⟮y⟯
+--   have _ := IntermediateField.adjoin.finiteDimensional yint
+--   let i_K : NormedAddGroupHom K (⊥ : IntermediateField K L) :=
+--     (AddMonoidHomClass.toAddMonoidHom (botEquiv K L).symm).mkNormedAddGroupHom 1 (by sorry) -- simp [extd])
+--   have _ : ContinuousSMul K M := by
+--     apply Topology.IsInducing.continuousSMul (N := K) (M := (⊥ : IntermediateField K L)) (X := M) (Y := M)
+--       (f := (IntermediateField.botEquiv K L).symm) Topology.IsInducing.id i_K.continuous
+--     intros c x
+--     simp
+--     -- exact (algebraMap_smul _ _ _).symm -- add an instance here
+--     rw [Algebra.smul_def, @Algebra.smul_def (⊥ : IntermediateField K L) M _ _ _]
+--     rfl -- note to reviewers: This is an ugly `rfl`. I'm not sure how to make it better.
+--   let _ : CompleteSpace M := FiniteDimensional.complete K M
+--   have hy : y ∈ K⟮y⟯ := IntermediateField.subset_adjoin K {y} rfl
+--   have zsep : IsSeparable M z := by
+--     apply Field.isSeparable_sub (IsSeparable.tower_top M xsep)
+--     simpa using isSeparable_algebraMap (⟨y, hy⟩ : M)
+--   suffices z ∈ K⟮y⟯ by simpa [z] using add_mem this hy
+--   by_contra hz
+--   have : z ∈ K⟮y⟯ ↔ z ∈ (⊥ : Subalgebra M L) := by sorry -- simp [Algebra.mem_bot]
+--   rw [this.not] at hz
+--   obtain ⟨z', hne, h1⟩ := (not_mem_iff_exists_ne_and_isConjRoot zsep
+--       (minpoly_sub_algebraMap_splits (⟨y, hy⟩ : K⟮y⟯) (IsIntegral.minpoly_splits_tower_top
+--         xsep.isIntegral sp))).mp hz
+--   simp only [ne_eq, Subtype.mk.injEq] at hne
+
+--   -- have eq_spnM : (norm : M → ℝ) = spectralNorm K M :=
+--   --   funext <| spectralNorm_unique_field_norm_ext
+--   --     (f := instNormedIntermediateField.toMulRingNorm) extd is_na
+--   -- have eq_spnL : (norm : L → ℝ) = spectralNorm K L :=
+--   --   funext <| spectralNorm_unique_field_norm_ext (f := NL.toMulRingNorm) extd is_na
+--   -- have is_naM : IsNonarchimedean (norm : M → ℝ) := eq_spnM ▸ spectralNorm_isNonarchimedean K M is_na
+--   -- have is_naL : IsNonarchimedean (norm : L → ℝ) := eq_spnL ▸ spectralNorm_isNonarchimedean K L is_na
+
+--   letI : NontriviallyNormedField M := {
+--     SubfieldClass.toNormedField M with
+--     non_trivial := by
+--       obtain ⟨k, hk⟩ :=  @NontriviallyNormedField.non_trivial K _
+--       use algebraMap K M k
+--       change 1 < ‖(algebraMap K L) k‖
+--       sorry -- simp [(extd k).symm, hk]-- a lemma for extends nontrivial implies nontrivial
+--     }
+--   -- have eq_spnML: (norm : L → ℝ) = spectralNorm M L := by
+--   --   apply Eq.trans eq_spnL
+--   --   apply (_root_.funext <| spectralNorm_unique_field_norm_ext (K := K)
+--   --     (f := (spectralMulAlgNorm is_naM).toMulRingNorm) _ is_na).symm
+--   --   apply functionExtends_of_functionExtends_of_functionExtends (fA := (norm : M → ℝ))
+--   --   · intro m
+--   --     exact extd m
+--   --   · exact spectralNorm_extends M L -- a lemma for extends extends
+--   -- have norm_eq: ‖z‖ = ‖z'‖ := by -- a lemma
+--   --   simp only [eq_spnML, spectralNorm]
+--   --   congr 1
+--     -- spectralNorm K L = spectralnorm M L
+--   -- IsConjRoot.val_eq M hM (Polynomial.Separable.isIntegral zsep) h1
+--   -- need rank one -- exist_algEquiv
+--   have extdM : ∀ x : M, ‖x‖ = ‖algebraMap M L x‖ := by
+--     sorry
+--   have uniqM : uniqueMulAlgebraNorm M L := by
+--     sorry
+--   have : ‖z - z'‖ < ‖z - z'‖ := by
+--     calc
+--       _ ≤ max ‖z‖ ‖z'‖ := by
+--         sorry -- simpa only [norm_neg, sub_eq_add_neg] using (is_na.norm_extension extd z (- z'))
+--       _ ≤ ‖x - y‖ := by
+
+--         sorry -- rw [h1.norm_eq_of_uniqueNormExtension M L z z' uniqM extdM
+--              -- (minpoly_sub_algebraMap_splits ⟨y, hy⟩ (xsep.isIntegral.minpoly_splits_tower_top sp))]
+--         -- simp only [max_self, le_refl]
+--       _ < ‖x - (z' + y)‖ := by
+--         apply kr (z' + y)
+--         · apply IsConjRoot.of_isScalarTower (L := M) xsep.isIntegral
+--           simpa only [IntermediateField.algebraMap_apply, sub_add_cancel, z] using
+--             IsConjRoot.add_algebraMap ⟨y, hy⟩ h1
+--         · simpa [z, sub_eq_iff_eq_add] using hne
+--       _ = ‖z - z'‖ := by congr 1; ring
+--   simp only [lt_self_iff_false] at this
 
 
 theorem of_completeSpace' {K L : Type*} [Nm_K : NontriviallyNormedField K] [NL : NormedField L]
