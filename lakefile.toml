@@ -15,7 +15,7 @@ rev = "16a1c5cebbf76fcbea57a380669e60224207be98"
 [[require]]
 name = "local_class_field_theory"
 git = "https://github.com/mariainesdff/LocalClassFieldTheory.git"
-rev = "master"
+rev = "0cf20ef319c27612f1ea87caa143e8ea5b175ba0"
 
 [[lean_lib]]
 name = "CP"

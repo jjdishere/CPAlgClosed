@@ -8,7 +8,7 @@
    "rev": "0cf20ef319c27612f1ea87caa143e8ea5b175ba0",
    "name": "local_class_field_theory",
    "manifestFile": "lake-manifest.json",
-   "inputRev": "master",
+   "inputRev": "0cf20ef319c27612f1ea87caa143e8ea5b175ba0",
    "inherited": false,
    "configFile": "lakefile.lean"},
   {"url": "https://github.com/leanprover-community/mathlib4",
