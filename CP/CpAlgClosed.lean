@@ -1,11 +1,6 @@
 import CP.Krasner
 import LocalClassFieldTheory.FromMathlib.CpDef
 
-#check spectral_norm_unique'
-variable {K L} [NontriviallyNormedField K] [CompleteSpace K] [NormedField L] [NormedAlgebra K L] [IsUltrametricDist K] [Algebra.IsAlgebraic K L]
-#synth IsKrasnerNorm K L
--- instance foo {K L} [NontriviallyNormedField K] [CompleteSpace K] [NormedField L] [NormedAlgebra K L] [IsUltrametricDist K] [Algebra.IsAlgebraic K L] : IsKrasnerNorm K L := sorry -- input from last file
-
 open Polynomial
 
 theorem exists_aroots_norm_sub_lt {K L} [NormedField K] [NormedField L] [NormedAlgebra K L] {f g : Polynomial K} (a : L) {ε : ℝ} (hε : 0 < ε)
@@ -204,7 +199,7 @@ instance PadicComplex.isAlgClosed : IsAlgClosed ℂ_[p] := by
     have masp : (minpoly ℂ_[p] a).Splits (algebraMap ℂ_[p] F) := by
       simpa [minpoly.eq_of_irreducible_of_monic firr fa0 fmon] using (Polynomial.SplittingField.splits f)
     simpa [IntermediateField.adjoin_simple_eq_bot_iff.mpr bbot] using
-        IsKrasnerNorm.krasner_norm ℂ_[p] F (minpoly.irreducible ⟨f, fmon, fa0⟩).separable
+        IsKrasnerNormed.krasner_normed ℂ_[p] F (minpoly.irreducible ⟨f, fmon, fa0⟩).separable
           masp ⟨gCp, gmon.map _, hb.2⟩ fun a' h1 h2 ↦ lt_of_lt_of_le hab (norm_sub_le a' h1 h2)
   let ⟨aCp, haCp⟩ := IntermediateField.mem_bot.mp abot
   use aCp

@@ -1,0 +1,65 @@
+
+-- TODO: A Valued version of Krasner's lemma
+-- Problem: IsValExtension does NOT implies NormedAlgebra. 
+-- NormedAlgebra cannot differ by a exponential
+-- But the IsKrasnerValued.of_completeSpace DO hold only for IsValExtension 
+-- Roadmap:
+-- 1. Give vL.comap a comap RankOne instance (easy)
+-- 2. Show that if `IsValExtension vK.v vL.v` and `RankOne vL`, the the topology (and uniformity) on K 
+-- induced by vK is the same as them induced by vL.comap
+-- (Note that this actually even holds without the condition `RankOne vL`, 
+-- if the definiton of valued is corrected.)
+-- 3. Show `IsValExtension.normedAlgebra` with `letI := (vL.comap _).toNormedField; letI := vL.toNormedField;`
+-- 4. Use 2 + 3 to finish the proof of `of_completeSpace`
+
+section IsValExtension
+
+variable (K L : Type*) [Field K] [Field L] [Algebra K L]
+    {ΓK ΓL : Type*} [LinearOrderedCommGroupWithZero ΓK] [LinearOrderedCommGroupWithZero ΓL]
+    [vK : Valued K ΓK] [vL : Valued L ΓL] [IsValExtension vK.v vL.v]
+    [hv : vK.v.RankOne] [hv : vL.v.RankOne]
+
+-- This is wrong. The correct instance is to replace vK by vL.comap
+instance IsValExtension.normedAlgebra :
+    letI := vK.toNormedField; letI := vL.toNormedField; NormedAlgebra K L :=
+    letI := vK.toNormedField; letI := vL.toNormedField
+    {
+      norm_smul_le _ _ := by
+        sorry
+    }
+
+end IsValExtension
+
+section Valued
+
+variable [Field K] [Field L] [Algebra K L]
+
+class IsKrasnerValued {ΓL : outParam Type*} [LinearOrderedCommGroupWithZero ΓL] [vL : Valued L ΓL] : Prop where
+  krasner_valued' : ∀ {x y : L}, IsSeparable K x → (minpoly K x).Splits (algebraMap K L) →
+    IsIntegral K y → (∀ x' : L, IsConjRoot K x x' → x ≠ x' → v (x - y) < v (x - x')) →
+      x ∈ K⟮y⟯
+
+namespace IsKrasnerValued
+
+variable {ΓK ΓL : Type*} [LinearOrderedCommGroupWithZero ΓK] [LinearOrderedCommGroupWithZero ΓL]
+    [vK : Valued K ΓK] [vL : Valued L ΓL]
+
+variable {K L} in
+theorem krasner_valued [IsKrasnerValued K L] {x y : L} (hx : IsSeparable K x)
+    (sp : (minpoly K x).Splits (algebraMap K L)) (hy : IsIntegral K y)
+    (h : (∀ x' : L, IsConjRoot K x x' → x ≠ x' → vL.v (x - y) < vL.v (x - x'))) : x ∈ K⟮y⟯ :=
+  IsKrasnerValued.krasner_valued' hx sp hy h
+
+theorem of_completeSpace [CompleteSpace K]
+    [IsValExtension vK.v vL.v] [hv : vK.v.RankOne] [hv : vL.v.RankOne] [Algebra.IsAlgebraic K L] :
+    IsKrasnerValued K L := by
+  letI : NontriviallyNormedField K := vK.toNontriviallyNormedField
+  letI := vL.toNontriviallyNormedField
+  constructor
+  intro x y xsep sp yint kr
+  apply IsKrasnerNormed.krasner_normed xsep sp yint
+  simpa [Valued.toNormedField.norm_lt_iff]
+
+end IsKrasnerValued
+
+end Valued
