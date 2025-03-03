@@ -1,5 +1,25 @@
-import CP.Krasner
-import LocalClassFieldTheory.FromMathlib.CpDef
+/-
+Copyright (c) 2025 Jiedong Jiang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jiedong Jiang
+-/
+import CPAlgClosed.Krasner
+import CPAlgClosed.PadicComplex
+import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Multiset
+import Mathlib.Analysis.Normed.Module.Completion
+
+/-!
+# The `p`-adic complex number field is algebraically complete.
+
+In this file, we prove that the `p`-adic complex number field `ℂ_[p]` is algebraically closed
+using Krasner's lemma.
+
+## Main results
+* `PadicComplex.isAlgClosed`: the `p`-adic complex number field is algebraically closed.
+
+## Tags
+p-adic complex numbers, algebraically closed
+-/
 
 open Polynomial
 
@@ -58,40 +78,6 @@ theorem exists_aroots_norm_sub_lt {K L} [NormedField K] [NormedField L] [NormedA
         exact pow_le_pow_right₀ (le_max_right ‖a‖ 1) (Nat.le_of_lt_succ hi)
       all_goals positivity
 
-namespace PadicComplex
-
-variable (p : ℕ) [Fact p.Prime]
-
-noncomputable
-instance : NontriviallyNormedField (QPAlg p) where
-  non_trivial := by
-    choose x hx using NontriviallyNormedField.non_trivial (α := ℚ_[p])
-    use x
-    rw [QPAlg.QP.norm_extends]
-    exact hx
-
-noncomputable
-instance : NontriviallyNormedField ℂ_[p] where
-  non_trivial := by
-    choose x hx using NontriviallyNormedField.non_trivial (α := QPAlg p)
-    use x
-    rw [PadicComplex.norm_extends]
-    exact hx
-
-instance charZero : CharZero ℂ_[p] :=
-  (RingHom.charZero_iff ((algebraMap (QPAlg p) ℂ_[p]).comp
-      (algebraMap ℚ_[p] (QPAlg p))).injective).mp inferInstance
-
--- `Diamond of two norm structures on C_p`
-theorem norm_eq_norm (x : ℂ_[p]): @norm (UniformSpace.Completion (QPAlg p)) (UniformSpace.Completion.instNorm (QPAlg p)) x = ‖x‖ := by
-  apply congrFun
-  apply UniformSpace.Completion.extension_unique (f := @norm (QPAlg p) _) (g := @norm ℂ_[p] _)
-  · exact uniformContinuous_norm
-  · exact uniformContinuous_norm (E := ℂ_[p])
-  · exact fun _ ↦ (norm_extends p _).symm
-
-end PadicComplex
-
 theorem Polynomial.exists_monic_norm_map_algebraMap_coeff_sub_lt {K} [NormedField K] {f : Polynomial (UniformSpace.Completion K)} (hf : f.Monic) {ε : ℝ} (hε : ε > 0) : ∃ g : Polynomial K, g.Monic ∧ f.natDegree = g.natDegree ∧ (∀ i : ℕ, i ≤ f.natDegree → (‖(g.map (algebraMap _ _)).coeff i - f.coeff i‖) < ε) := by
   by_cases h : f.natDegree = 0
   · use 1
@@ -125,6 +111,9 @@ theorem Polynomial.exists_monic_norm_map_algebraMap_coeff_sub_lt {K} [NormedFiel
 
 variable (p : ℕ) [Fact p.Prime]
 
+/--
+`ℂ_[p]` is algebraically closed.
+-/
 instance PadicComplex.isAlgClosed : IsAlgClosed ℂ_[p] := by
   apply IsAlgClosed.of_exists_root
   intro f fmon firr
@@ -199,7 +188,7 @@ instance PadicComplex.isAlgClosed : IsAlgClosed ℂ_[p] := by
     have masp : (minpoly ℂ_[p] a).Splits (algebraMap ℂ_[p] F) := by
       simpa [minpoly.eq_of_irreducible_of_monic firr fa0 fmon] using (Polynomial.SplittingField.splits f)
     simpa [IntermediateField.adjoin_simple_eq_bot_iff.mpr bbot] using
-        IsKrasnerNormed.krasner_normed ℂ_[p] F (minpoly.irreducible ⟨f, fmon, fa0⟩).separable
+        IsKrasnerNormed.krasner_normed (minpoly.irreducible ⟨f, fmon, fa0⟩).separable
           masp ⟨gCp, gmon.map _, hb.2⟩ fun a' h1 h2 ↦ lt_of_lt_of_le hab (norm_sub_le a' h1 h2)
   let ⟨aCp, haCp⟩ := IntermediateField.mem_bot.mp abot
   use aCp

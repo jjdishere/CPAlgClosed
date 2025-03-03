@@ -1,4 +1,4 @@
-name = "CP"
+name = "CPAlgClosed"
 version = "0.1.0"
 keywords = ["math"]
 defaultTargets = ["CP"]
@@ -18,4 +18,4 @@ git = "https://github.com/mariainesdff/LocalClassFieldTheory.git"
 rev = "0cf20ef319c27612f1ea87caa143e8ea5b175ba0"
 
 [[lean_lib]]
-name = "CP"
+name = "CPAlgClosed"
