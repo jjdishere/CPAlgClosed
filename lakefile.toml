@@ -1,7 +1,7 @@
 name = "CPAlgClosed"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["CP"]
+defaultTargets = ["CPAlgClosed"]
 
 [leanOptions]
 pp.unicode.fun = true
