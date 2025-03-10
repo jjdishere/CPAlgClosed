@@ -23,8 +23,9 @@ p-adic complex numbers, algebraically closed
 
 open Polynomial
 
-theorem exists_aroots_norm_sub_lt {K L} [NormedField K] [NormedField L] [NormedAlgebra K L] {f g : Polynomial K} (a : L) {ε : ℝ} (hε : 0 < ε)
-    (ha : f.aeval a = 0) (hfm : f.Monic) (hgm : g.Monic) (hdeg : g.natDegree = f.natDegree)
+theorem Polynomial.exists_aroots_norm_sub_lt_of_norm_coeff_sub_lt {K L : Type*}
+    [NormedField K] [NormedField L] [NormedAlgebra K L] {f g : Polynomial K} (a : L) {ε : ℝ}
+    (hε : 0 < ε) (ha : f.aeval a = 0) (hfm : f.Monic) (hgm : g.Monic) (hdeg : g.natDegree = f.natDegree)
     (hcoeff : ∀ i : ℕ, i ≤ f.natDegree → (‖g.coeff i - f.coeff i‖) < ε) (hg : g.Splits (algebraMap K L)) :
     ∃ b ∈ g.aroots L, ‖a - b‖ < ((f.natDegree + 1) * ε) ^ (f.natDegree : ℝ)⁻¹ * max ‖a‖ 1 := by
   have hcard : (g.aroots L).card = f.natDegree := by
@@ -170,7 +171,7 @@ instance PadicComplex.isAlgClosed : IsAlgClosed ℂ_[p] := by
     exact IsAlgClosed.splits g
   have gCpSplits : gCp.Splits (algebraMap ℂ_[p] F) :=
     Polynomial.splits_of_isScalarTower _ gCpSplitsId
-  let ⟨b, hb, hab⟩ := exists_aroots_norm_sub_lt a hε fa0 fmon (gmon.map _) (gdeg ▸ (g.natDegree_map _)) gCpcoeff gCpSplits
+  let ⟨b, hb, hab⟩ := exists_aroots_norm_sub_lt_of_norm_coeff_sub_lt a hε fa0 fmon (gmon.map _) (gdeg ▸ (g.natDegree_map _)) gCpcoeff gCpSplits
   have hab : ‖a - b‖ < δ := by
     have : (max ‖a‖ 1) > 0 := by positivity
     rw [← Real.rpow_natCast, ← mul_comm_div, div_self, one_mul, ← Real.rpow_mul (div_pos δpos this).le, mul_inv_cancel₀] at hab
